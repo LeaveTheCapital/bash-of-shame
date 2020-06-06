@@ -1,0 +1,5 @@
+[user]
+	email = hellohenry@gmail.com
+	name = Henry
+[core]
+	autocrlf = true
