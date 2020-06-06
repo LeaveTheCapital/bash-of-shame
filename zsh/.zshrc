@@ -3,7 +3,8 @@
 export PATH="$HOME/bin:$HOME/.local/bin:/usr/bin:/usr/local/bin:$PATH"
 
 # Path to your oh-my-zsh installation.
-export ZSH=$HOME/.oh-my-zsh
+# previously had used: export ZSH=$HOME/.oh-my-zsh
+export ZSH="/home/henry/.oh-my-zsh"
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -96,22 +97,7 @@ hash -d c=/mnt/c
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias npm="/usr/bin/npm"
 
-alias cdso="cd /mnt/c/source"
-alias qua="cd /mnt/c/source/quoteware-admin"
-alias dealership="cd /mnt/c/source/quoteware-admin/server/ivendi.Dealership"
-alias server='cd /mnt/c/source/quoteware-admin/server'
-alias lender='cd /mnt/c/source/international-lenderservices/server/ivendi.Lender'
-alias dealershipacl='cd /mnt/c/source/quoteware-admin/server/dealership-bc-acl'
-alias lenderacl='cd /mnt/c/source/international-lenderservices/server/lender-bc-acl'
-alias identity='cd /mnt/c/source/quoteware-admin/server/identity-server'
-alias feedparser='cd /mnt/c/source/quoteware-admin/server/BdkFeedParser'
-alias client='cd /mnt/c/source/quoteware-admin/client'
-alias lenderclient='cd /mnt/c/source/international-lenderservices/lender-client'
-alias elastic='cd /mnt/c/source/ivendi-kernel/uk-platform-search-indexing'
-
-alias startall='dealership && sln && identity && sln && lender && sln && dealershipacl && sln && lenderacl && sln && feedparser && sln'
-
-alias runscripts='cd /mnt/c/source/international-lenderservices/scripts && bash inviteLenderUser.sh idDwzaDmwEodD3w7Aqwv82A6 local lender@bdk.com bdk true && bash seed2BdkFinanceProducts.sh idDwzaDmwEodD3w7Aqwv82A6 local && bash assign2BdkFinanceProducts.sh idDwzaDmwEodD3w7Aqwv82A6 local && bash seedMultipleMediaCompanies.sh idDwzaDmwEodD3w7Aqwv82A6 local'
+alias cdso="cd /mnt/c/code"
 
 alias ddu='docker-compose down && docker-compose up -d'
 
