@@ -11,3 +11,5 @@ if [ -e ~/.bashrc -a ! -e ~/.bash_profile -a ! -e ~/.bash_login -a ! -e ~/.profi
 fi
 
 PROMPT_COMMAND='history -a'
+
+cd() { builtin cd "$@"; ls; }               # Always list directory contents upon 'cd'
