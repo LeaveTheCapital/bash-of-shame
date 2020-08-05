@@ -66,3 +66,5 @@ fi
 unset env
 ```
 
+to map wsl2 to network drive in windows explorer
+click Computer -> Map Network Drive -> `\\wsl$\Ubuntu-18.04\`
