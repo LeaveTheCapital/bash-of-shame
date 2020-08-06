@@ -68,3 +68,8 @@ unset env
 
 to map wsl2 to network drive in windows explorer
 click Computer -> Map Network Drive -> `\\wsl$\Ubuntu-18.04\`
+
+to find IP of WSL2 if localhost not working
+```
+ip addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
+```
