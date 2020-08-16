@@ -73,3 +73,12 @@ to find IP of WSL2 if localhost not working
 ```
 ip addr show eth0 | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
 ```
+
+to fix 'broken zsh path'
+https://shapeshed.com/zsh-corrupt-history-file/
+```
+cd ~
+mv .zsh_history .zsh_history_bad
+strings .zsh_history_bad > .zsh_history
+fc -R .zsh_history
+```
