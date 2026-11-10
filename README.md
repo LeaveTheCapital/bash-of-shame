@@ -1,4 +1,45 @@
-for automatic ls on cd in git bash:
+# Portable zsh repository aliases
+
+The aliases in [`zsh-aliases.zsh`](zsh-aliases.zsh) use paths relative to
+`$HOME`, so the same file works across machines. To install them into an
+existing `.zshrc`, run:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/LeaveTheCapital/bash-of-shame/master/install-zsh-aliases | sh
+```
+
+Alternatively, clone this repository and run `./install-zsh-aliases`.
+
+The installer:
+
+- uses and updates the checkout it is run from, or clones the latest repository
+  into `~/.local/share/bash-of-shame` when run through the `curl` command;
+- adds or replaces one clearly marked alias block in `~/.zshrc`, without
+  duplicating aliases on repeated runs (aliases you already define outside the
+  managed block are left alone); and
+- creates `~/.local/bin/update-zsh-aliases` for future updates and adds that
+  directory to `PATH` for new shells.
+
+Make sure `~/.local/bin` is on your `PATH`, then update from any directory with:
+
+```sh
+update-zsh-aliases
+```
+
+To add another shortcut, edit `zsh-aliases.zsh` using this pattern and push it
+to the repository:
+
+```zsh
+alias project-name='cd "$HOME/code/project-name"'
+```
+
+Run `update-zsh-aliases` on each machine after changing the file. If you keep
+your zsh configuration somewhere other than `$HOME`, the installer respects
+`$ZDOTDIR`.
+
+## Other shell notes
+
+For automatic ls on cd in git bash:
 
 .bashrc
 

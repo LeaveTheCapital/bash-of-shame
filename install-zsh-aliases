@@ -1,0 +1,177 @@
+#!/bin/sh
+
+set -eu
+
+repo_url=${BASH_OF_SHAME_REPO_URL:-https://github.com/LeaveTheCapital/bash-of-shame.git}
+data_home=${XDG_DATA_HOME:-"$HOME/.local/share"}
+bin_dir=${BASH_OF_SHAME_BIN_DIR:-"$HOME/.local/bin"}
+zshrc=${ZDOTDIR:-"$HOME"}/.zshrc
+
+if [ "${BASH_OF_SHAME_INSTALL_DIR+x}" = x ]; then
+  install_dir=$BASH_OF_SHAME_INSTALL_DIR
+else
+  case $0 in
+    */*) script_path=$0 ;;
+    *) script_path=$(command -v "$0" 2>/dev/null || printf '%s\n' "$0") ;;
+  esac
+  while [ -L "$script_path" ]; do
+    link_target=$(readlink "$script_path")
+    case $link_target in
+      /*) script_path=$link_target ;;
+      *) script_path=$(dirname "$script_path")/$link_target ;;
+    esac
+  done
+  script_dir=$(CDPATH= cd "$(dirname "$script_path")" 2>/dev/null && pwd -P) || script_dir=
+  if [ -n "$script_dir" ] && [ -d "$script_dir/.git" ] && [ -r "$script_dir/zsh-aliases.zsh" ]; then
+    install_dir=$script_dir
+  else
+    install_dir=$data_home/bash-of-shame
+  fi
+fi
+
+aliases_file=$install_dir/zsh-aliases.zsh
+command_path=$bin_dir/update-zsh-aliases
+
+start_marker='# >>> bash-of-shame aliases >>>'
+end_marker='# <<< bash-of-shame aliases <<<'
+
+if ! command -v git >/dev/null 2>&1; then
+  printf '%s\n' 'Error: git is required but was not found on PATH.' >&2
+  exit 1
+fi
+
+if [ -e "$command_path" ] || [ -L "$command_path" ]; then
+  if [ ! -L "$command_path" ] || [ "$(readlink "$command_path")" != "$install_dir/install-zsh-aliases" ]; then
+    printf 'Error: refusing to replace existing command: %s\n' "$command_path" >&2
+    exit 1
+  fi
+fi
+
+if [ -d "$install_dir/.git" ]; then
+  printf 'Updating %s...\n' "$install_dir"
+  git -C "$install_dir" pull --ff-only
+elif [ -e "$install_dir" ]; then
+  printf 'Error: %s exists but is not a git checkout.\n' "$install_dir" >&2
+  exit 1
+else
+  printf 'Cloning %s into %s...\n' "$repo_url" "$install_dir"
+  mkdir -p "$(dirname "$install_dir")"
+  git clone "$repo_url" "$install_dir"
+fi
+
+if [ ! -r "$aliases_file" ]; then
+  printf 'Error: aliases file not found: %s\n' "$aliases_file" >&2
+  exit 1
+fi
+
+mkdir -p "$(dirname "$zshrc")" "$bin_dir"
+touch "$zshrc"
+
+tmp_file=$(mktemp "${TMPDIR:-/tmp}/bash-of-shame-zshrc.XXXXXX")
+filtered_aliases=$(mktemp "${TMPDIR:-/tmp}/bash-of-shame-aliases.XXXXXX")
+trap 'rm -f "$tmp_file" "$filtered_aliases"' EXIT HUP INT TERM
+
+awk -v start="$start_marker" -v end="$end_marker" '
+  $0 == start {
+    if (inside) {
+      print "Error: nested bash-of-shame alias blocks in .zshrc" > "/dev/stderr"
+      exit 2
+    }
+    inside = 1
+    blocks++
+    next
+  }
+  $0 == end {
+    if (!inside) {
+      print "Error: unmatched bash-of-shame alias marker in .zshrc" > "/dev/stderr"
+      exit 2
+    }
+    inside = 0
+    next
+  }
+  !inside { print }
+  END {
+    if (inside) {
+      print "Error: incomplete bash-of-shame alias block in .zshrc" > "/dev/stderr"
+      exit 2
+    }
+    if (blocks > 1) {
+      print "Error: multiple bash-of-shame alias blocks in .zshrc" > "/dev/stderr"
+      exit 2
+    }
+  }
+' "$zshrc" > "$tmp_file"
+
+# Respect aliases the user already maintains outside our managed block. Alias
+# definitions from a previous managed block were removed above, so repository
+# changes still replace older repository-managed definitions.
+awk '
+  FILENAME == ARGV[1] {
+    line = $0
+    if (line ~ /^[[:space:]]*alias[[:space:]]+[A-Za-z_][A-Za-z0-9_]*=/) {
+      sub(/^[[:space:]]*alias[[:space:]]+/, "", line)
+      sub(/=.*/, "", line)
+      existing[line] = 1
+    }
+    next
+  }
+  {
+    line = $0
+    if (line ~ /^[[:space:]]*alias[[:space:]]+[A-Za-z_][A-Za-z0-9_]*=/) {
+      sub(/^[[:space:]]*alias[[:space:]]+/, "", line)
+      sub(/=.*/, "", line)
+      if (existing[line]) {
+        next
+      }
+      existing[line] = 1
+    }
+    print
+  }
+' "$tmp_file" "$aliases_file" > "$filtered_aliases"
+
+# Keep one blank line before the managed block, without accumulating more on
+# repeated runs. awk has already normalised the preceding line ending.
+if [ -s "$tmp_file" ]; then
+  last_line=$(tail -n 1 "$tmp_file")
+  if [ -n "$last_line" ]; then
+    printf '\n' >> "$tmp_file"
+  fi
+fi
+printf '%s\n' "$start_marker" >> "$tmp_file"
+if [ "$bin_dir" = "$HOME/.local/bin" ]; then
+  cat >> "$tmp_file" <<'EOF'
+# Make the updater available in new shells.
+case ":$PATH:" in
+  *:"$HOME/.local/bin":*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
+esac
+
+EOF
+fi
+cat "$filtered_aliases" >> "$tmp_file"
+if [ -s "$filtered_aliases" ] && [ -n "$(tail -c 1 "$filtered_aliases")" ]; then
+  printf '\n' >> "$tmp_file"
+fi
+printf '%s\n' "$end_marker" >> "$tmp_file"
+
+if [ -L "$zshrc" ]; then
+  # Write through a dotfiles-managed symlink rather than replacing the link.
+  cp "$tmp_file" "$zshrc"
+  rm -f "$tmp_file"
+else
+  mode=$(stat -c %a "$zshrc" 2>/dev/null || stat -f %Lp "$zshrc" 2>/dev/null || printf '600\n')
+  chmod "$mode" "$tmp_file"
+  mv "$tmp_file" "$zshrc"
+fi
+rm -f "$filtered_aliases"
+trap - EXIT HUP INT TERM
+
+ln -sf "$install_dir/install-zsh-aliases" "$command_path"
+
+printf '\nAliases updated in %s.\n' "$zshrc"
+printf 'Future updates: %s\n' "$command_path"
+case ":$PATH:" in
+  *:"$bin_dir":*) ;;
+  *) printf 'Note: add %s to PATH to run update-zsh-aliases directly.\n' "$bin_dir" ;;
+esac
+printf 'Open a new shell or run: source %s\n' "$zshrc"
