@@ -103,7 +103,7 @@ alias ddu='docker-compose down && docker-compose up -d'
 
 alias desk='cd ~ && cd Desktop'
 alias addal='code ~/.zshrc'
-alias listal='grep ^alias ~/.zshrc'
+alias listal="grep '^alias ' ~/.zshrc | sort"
 alias gst='git status'
 alias gco='git checkout'
 alias ga='git add .'

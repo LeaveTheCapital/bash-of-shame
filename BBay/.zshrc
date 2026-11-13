@@ -130,7 +130,7 @@ EDITOR=vim
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
 alias addal='code ~/.zshrc'
-alias listal='grep ^alias ~/.zshrc'
+alias listal="grep '^alias ' ~/.zshrc | sort"
 alias cdso='cd ~/source'
 
 
