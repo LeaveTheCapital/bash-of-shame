@@ -9,10 +9,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install zsh
         run: sudo apt-get update && sudo apt-get install -y zsh
       - name: Check shell syntax and whitespace
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           for file in install-zsh-aliases bash_profile.sh env.sh git-prompt.sh lang.sh perlbin.sh aliases.sh BBay/bash-windows/aliases.sh BBay/zsh_history_fix.sh; do sh -n "$file" || exit 1; done
           for file in zsh-aliases.zsh zsh/.zshrc BBay/.zshrc; do zsh -n "$file" || exit 1; done
-          git diff --check HEAD^ HEAD
+          if [[ -z "$BASE_SHA" || "$BASE_SHA" =~ ^0+$ ]]; then
+            BASE_SHA=$(git hash-object -t tree /dev/null)
+          fi
+          git diff --check "$BASE_SHA" HEAD
