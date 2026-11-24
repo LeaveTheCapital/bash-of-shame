@@ -1,11 +1,14 @@
 # Portable zsh repository aliases
 
+This repository collects shell aliases and configuration notes, with an
+installer for the portable aliases in `zsh-aliases.zsh`.
+
 The aliases in [`zsh-aliases.zsh`](zsh-aliases.zsh) use paths relative to
 `$HOME`, so the same file works across machines. To install them into an
 existing `.zshrc`, run:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/LeaveTheCapital/bash-of-shame/master/install-zsh-aliases | sh
+curl -fsSL https://raw.githubusercontent.com/LeaveTheCapital/bash-of-shame/main/install-zsh-aliases | sh
 ```
 
 Alternatively, clone this repository and run `./install-zsh-aliases`.
@@ -26,8 +29,8 @@ Make sure `~/.local/bin` is on your `PATH`, then update from any directory with:
 update-zsh-aliases
 ```
 
-To add another shortcut, edit `zsh-aliases.zsh` using this pattern and push it
-to the repository:
+To add another shortcut, edit `zsh-aliases.zsh` using this pattern. Submit a
+pull request if you are contributing from a fork:
 
 ```zsh
 alias project-name='cd "$HOME/code/project-name"'
@@ -36,6 +39,14 @@ alias project-name='cd "$HOME/code/project-name"'
 Run `update-zsh-aliases` on each machine after changing the file. If you keep
 your zsh configuration somewhere other than `$HOME`, the installer respects
 `$ZDOTDIR`.
+
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for the
+workflow and checks. This project is licensed under the [MIT License](LICENSE).
+Review any shell configuration or dotfile snapshot before sharing it: it may
+contain personal information. Generated shell history files are ignored for
+new additions, but older copies remain in the repository history.
 
 ## Other shell notes
 

@@ -1,0 +1,11 @@
+# Local shell state and generated files. Already tracked files require separate
+# review before removal; ignore rules do not remove them from Git history.
+**/.bash_history
+**/.zsh_history
+**/.zcompdump*
+**/.viminfo
+**/.wget-hsts
+**/.sudo_as_admin_successful
+*.swp
+*.swo
+*~
